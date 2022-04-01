@@ -56,8 +56,38 @@ func (s *server) AddDocument(w http.ResponseWriter, r *http.Request, _ httproute
 	}, nil)
 }
 
-func (s *server) SearchDocuments(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	panic("Unimplemented")
+func (s *server) SearchDocuments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	q, err := parseQuery(r.URL.Query().Get("q"))
+	if err != nil {
+		jsonResponse(w, nil, err)
+		return
+	}
+
+	var documents []map[string]interface{}
+
+	iter := s.db.NewIter(nil)
+	defer iter.Close()
+
+	for iter.First(); iter.Valid(); iter.Next() {
+		var document map[string]interface{}
+		err = json.Unmarshal(iter.Value(), &document)
+		if err != nil {
+			jsonResponse(w, nil, err)
+			return
+		}
+
+		if q.match(document) {
+			documents = append(documents, map[string]interface{}{
+				"id":   string(iter.Key()),
+				"body": document,
+			})
+		}
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"documents": documents,
+		"count":     len(documents),
+	}, nil)
 }
 
 func (s *server) GetDocument(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
