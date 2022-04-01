@@ -14,5 +14,8 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# package
+document-database-from-scratch
+
 # local storage
 docdb.data/

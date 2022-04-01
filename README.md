@@ -11,3 +11,10 @@ Post document
 $ curl -X POST -H 'Content-Type: application/json' -d '{"name": "Kevin", "age": "45"}' http://localhost:8080/docs
 {"body":{"id":"9b7cecae-d88e-43ee-bcdb-db54d9828a84"},"status":"ok"}
 ```
+
+Get document by id
+
+```
+$ curl -X GET http://localhost:8080/docs/9b7cecae-d88e-43ee-bcdb-db54d9828a84
+{"body":{"document":{"age":"45","name":"Kevin"}},"status":"ok"}
+```

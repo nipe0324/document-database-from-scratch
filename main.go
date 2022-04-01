@@ -53,8 +53,30 @@ func (s server) searchDocuments(w http.ResponseWriter, r *http.Request, _ httpro
 	panic("Unimplemented")
 }
 
-func (s server) getDocument(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	panic("Unimplemented")
+func (s server) getDocumentById(id []byte) (map[string]interface{}, error) {
+	value, closer, err := s.db.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	defer closer.Close()
+
+	var document map[string]interface{}
+	err = json.Unmarshal(value, &document)
+	return document, err
+}
+
+func (s server) getDocument(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := ps.ByName("id")
+
+	document, err := s.getDocumentById([]byte(id))
+	if err != nil {
+		jsonResponse(w, nil, err)
+		return
+	}
+
+	jsonResponse(w, map[string]interface{}{
+		"document": document,
+	}, nil)
 }
 
 func jsonResponse(w http.ResponseWriter, body map[string]interface{}, err error) {
